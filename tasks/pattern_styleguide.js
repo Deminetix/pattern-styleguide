@@ -21,16 +21,23 @@ module.exports = function(grunt) {
     var options = this.options();
 
     var settings = {
-      indexFile     : data.indexFile || options.indexFile || 'index.html',
-      patternsDir   : data.patternsDir || options.patternsDir || 'patterns',
-      outputDir     : data.outputDir || options.outputDir || 'output'
+      indexTemplate   : data.indexTemplate || options.indexTemplate || 'index.html',
+      patternTemplate : data.patternTemplate || options.patternTemplate || 'pattern.html',
+      patternsDir     : data.patternsDir || options.patternsDir || 'patterns',
+      outputDir       : data.outputDir || options.outputDir || 'output'
     };
 
     // Get the html template
-    if(!grunt.file.exists(settings.indexFile)){
-      return done(new Error('index file not found...'));
+    if(!grunt.file.exists(settings.indexTemplate)){
+      return done(new Error('index template not found...'));
     }
-    var indexFile = grunt.file.read(settings.indexFile);
+    var indexTemplate = grunt.file.read(settings.indexTemplate);
+
+    // Get the pattern template
+    if(!grunt.file.exists(settings.patternTemplate)){
+      return done(new Error('pattern template not found...'));
+    }
+    var patternTemplate = grunt.file.read(settings.patternTemplate);
 
     // Generate the patterns html
     var patternHtml = '';
@@ -38,58 +45,18 @@ module.exports = function(grunt) {
       grunt.file.mkdir(settings.patternsDir);
     }
     grunt.file.recurse(settings.patternsDir, function(abspath, rootdir, subdir, filename){
-      var patternFile = grunt.file.read(abspath);
-      var code = [
-        '<div class="pattern-display">',
-        patternFile,
-        '</div>',
-        '<div class="pattern-code">',
-        '<textarea>',
-        patternFile,
-        '</textarea>',
-        '</div>'
-      ].join('');
-      patternHtml += code;
+      var patternContent = grunt.file.read(abspath);
+      var pattern = patternTemplate.replace(/<!-- pattern -->/g, patternContent);
+      console.log(pattern);
+      patternHtml += pattern;
     });
 
-    indexFile = indexFile.replace('<!-- patterns -->', patternHtml);
+    indexTemplate = indexTemplate.replace('<!-- patterns -->', patternHtml);
 
-    grunt.file.write(settings.outputDir + '/index.html', indexFile);
+    grunt.file.write(settings.outputDir + '/index.html', indexTemplate);
 
     done();
 
-
-    // // Merge task-specific and/or target-specific options with these defaults.
-    // var options = this.options({
-    //   punctuation: '.',
-    //   separator: ', '
-    // });
-
-    // // Iterate over all specified file groups.
-    // this.files.forEach(function(f) {
-    //   // Concat specified files.
-    //   var src = f.src.filter(function(filepath) {
-    //     // Warn on and remove invalid source files (if nonull was set).
-    //     if (!grunt.file.exists(filepath)) {
-    //       grunt.log.warn('Source file "' + filepath + '" not found.');
-    //       return false;
-    //     } else {
-    //       return true;
-    //     }
-    //   }).map(function(filepath) {
-    //     // Read file source.
-    //     return grunt.file.read(filepath);
-    //   }).join(grunt.util.normalizelf(options.separator));
-
-    //   // Handle options.
-    //   src += options.punctuation;
-
-    //   // Write the destination file.
-    //   grunt.file.write(f.dest, src);
-
-    //   // Print a success message.
-    //   grunt.log.writeln('File "' + f.dest + '" created.');
-    // });
   });
 
 };

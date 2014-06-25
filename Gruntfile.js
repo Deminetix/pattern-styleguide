@@ -31,8 +31,8 @@ module.exports = function(grunt) {
     // Configuration to be run (and then tested).
     pattern_styleguide: {
       test: {
-        indexTemplate: 'test/index.html',
-        patternTemplate: 'test/pattern.html',
+        indexTemplate: 'test/index.jade',
+        patternTemplate: 'test/pattern.jade',
         patternsDir: 'test/patterns',
         outputDir: 'test/output'
       }

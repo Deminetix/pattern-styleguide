@@ -8,7 +8,8 @@
 
 'use strict';
 
-var _ = require('underscore');
+var _     = require('underscore');
+var jade  = require('jade');
 
 module.exports = function(grunt) {
 
@@ -21,8 +22,8 @@ module.exports = function(grunt) {
     var options = this.options();
 
     var settings = {
-      indexTemplate   : data.indexTemplate || options.indexTemplate || 'index.html',
-      patternTemplate : data.patternTemplate || options.patternTemplate || 'pattern.html',
+      indexTemplate   : data.indexTemplate || options.indexTemplate || 'index.jade',
+      patternTemplate : data.patternTemplate || options.patternTemplate || 'pattern.jade',
       patternsDir     : data.patternsDir || options.patternsDir || 'patterns',
       outputDir       : data.outputDir || options.outputDir || 'output'
     };
@@ -31,26 +32,29 @@ module.exports = function(grunt) {
     if(!grunt.file.exists(settings.indexTemplate)){
       return done(new Error('index template not found...'));
     }
-    var indexTemplate = grunt.file.read(settings.indexTemplate);
+    var indexTemplate = jade.render(grunt.file.read(settings.indexTemplate));
 
     // Get the pattern template
     if(!grunt.file.exists(settings.patternTemplate)){
       return done(new Error('pattern template not found...'));
     }
-    var patternTemplate = grunt.file.read(settings.patternTemplate);
+    var patternTemplate = jade.render(grunt.file.read(settings.patternTemplate));
 
     // Generate the patterns html
-    var patternHtml = '';
+    var patternBuild = '';
     if(!grunt.file.exists(settings.patternsDir)) {
       grunt.file.mkdir(settings.patternsDir);
     }
     grunt.file.recurse(settings.patternsDir, function(abspath, rootdir, subdir, filename){
-      var patternContent = grunt.file.read(abspath);
-      var pattern = patternTemplate.replace(/<!-- pattern -->/g, patternContent);
-      patternHtml += pattern;
+      var output;
+      var patternJade = grunt.file.read(abspath);
+      var patternHtml = jade.render(patternJade);
+      output = patternTemplate.replace('<!-- pattern-jade -->', patternJade);
+      output = output.replace('<!-- pattern-html -->', patternHtml);
+      patternBuild += output;
     });
 
-    indexTemplate = indexTemplate.replace('<!-- patterns -->', patternHtml);
+    indexTemplate = indexTemplate.replace('<!-- patterns -->', patternBuild);
 
     grunt.file.write(settings.outputDir + '/index.html', indexTemplate);
 

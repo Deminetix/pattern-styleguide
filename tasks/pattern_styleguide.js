@@ -47,7 +47,6 @@ module.exports = function(grunt) {
     grunt.file.recurse(settings.patternsDir, function(abspath, rootdir, subdir, filename){
       var patternContent = grunt.file.read(abspath);
       var pattern = patternTemplate.replace(/<!-- pattern -->/g, patternContent);
-      console.log(pattern);
       patternHtml += pattern;
     });
 
